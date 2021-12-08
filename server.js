@@ -33,63 +33,38 @@
 
 		// [Client => Server] Receive data from client to server
 		socket.on('CLIENT_TO_SERVER_EVENT', async (data) => {
-			const obj = JSON.parse(data);
-			console.log(obj);
+			try {
+				let obj = JSON.parse(data);
+				if (typeof obj === 'string')obj = JSON.parse(data);
+				console.log(obj);
+	
+				//let result = await g_collection.updateOne({ "name": data.fromUser }, { $set: {"ID":socket.id}  }, { upsert: true });
+				// let result = await g_collection.updateOne({}, { $set: obj.collection }, { upsert: true });
 
-			notifyAllUser('SERVER_TO_CLIENT_EVENT', JSON.stringify({ name:'Jay', age: 7 }));
+				// let result = await g_collection.insertMany([{ item: "journal", qty: 25, tags: ["blank", "red"], size: { h: 14, w: 21, uom: "cm" } },{ item: "mat", qty: 85, tags: ["gray"], size: { h: 27.9, w: 35.5, uom: "cm" } },{ item: "mousepad", qty: 25, tags: ["gel", "blue"], size: { h: 19, w: 22.85, uom: "cm" } } ]);
+	
+				let strFormQuery = 'await g_collection.' + obj.query;
+				console.log(strFormQuery);
+				strFormQuery = '(async () => {' + strFormQuery + '})();'; // wrap around async function
+				let result = eval(strFormQuery); // execute the query
+
+
+				const cursor = await g_collection.find({}, {});
+				// Store the results in an array
+				const findResult = await cursor.toArray();
+				// notifyAllUser('SERVER_TO_CLIENT_EVENT', JSON.stringify(findResult));
+				notifyAllUser('SERVER_TO_CLIENT_OUTPUT', JSON.stringify(findResult, null, 2));
+
+				
+
+				// notifyAllUser('SERVER_TO_CLIENT_EVENT', JSON.stringify({ name:'Jay', age: 7 }));
+			}
+			catch(error) {
+				notifyAllUser('SERVER_TO_CLIENT_COLLECTION_ERROR', JSON.stringify({ errorType: error.name, errorMsg: error.message }));
+			}
 		});
 	});
 
-	//////////////////////////////////////// REST API SETUP ////////////////////////////////////////////////////////////
-	// Lookup is performed in the following order:
-	// 	1. req.params
-	// 	2. req.body
-	// 	3. req.query
-
-	// // https://expressjs.com/en/guide/routing.html
-	// 1. param => "/cars/honda"  => returns a list of Honda car models
-	// 3. query => "/car/honda?color=blue" => returns a list of Honda car models, but filter by blue Color.
-	// 			NOT => "/car/honda/color/blue"
-
-	// Passing parameters by 'body'
-	app.post('/api/login', (req, res) => {
-		const { username, password } = req.body; // Max.body size allowed is 100kb
-		// send the data response to client 
-		return res.json({ data: `Server: ${username} got your Post msg - ${password} from Client` });
-	});
-
-	// Passing parameters by query [key-value] (req.query):   ?name="sridhar"
-	app.get('/api/getUserByQuery', (req, res) => {
-		const { query } = req;		 // 'query': It is an in-build property from 'HTTP get' 
-		const username = query.name; // http://localhost:3000/api/getUserByQuery?name=Sridhar
-		// send the data response to client 
-		return res.json({ data: `Server: ${username} got your GET msg from Client` });
-	});
-
-	// Passing parameters by "named route"(req.params):    /5ec3c7c
-	app.get('/api/getUserIdValue/:someIdValue', (req, res) => {
-		// params is an object NOT a string. Bcos Express() by default converts the string to object by decodeUriComponent().
-		const { params } = req;				 // 'params': It is an in-build property from 'HTTP get' 
-		const username = params.someIdValue; // http://localhost:3000/api/getUserIdValue/5ec3c7c
-		// send the data response to client 
-		return res.json({ data: `Server: ${username} got your GET msg from Client` });
-	});
-
-	app.put('/api/replaceData', (req, res) => {
-	//app.put('/api/replaceData/:someIdValue', (req, res) => {
-		const { params } = req;				 // 'params': It is an in-build property from 'HTTP get' 
-		const username = params.someIdValue; // http://localhost:3000/api/replaceData/3456
-		// send the data response to client 
-		return res.json({ data: `Server: ${username} got your GET msg from Client` });
-	});
-
-	// GET method route
-	app.get('/', function (req, res) {
-		res.send('GET request to the homepage');
-	});
-
-
-	
 	
 	
 	
@@ -117,9 +92,9 @@
 	// 2. Mongo: Atlas database
 	// Connection URI <username>, <password>, and <your-cluster-url>.
 	const databaseURI = 'mongodb+srv://sridharkritha:2244@cluster0.02kdt.mongodb.net/';
-	const MONGO_DATABASE_NAME = 'chatApp';
-	const MONGO_COLLECTION_NAME = 'chats';       // collection to store all chats
-	const userCollection = 'onlineUsers'; // collection to maintain list of currently online users
+	const MONGO_DATABASE_NAME = 'mongodbplayground';
+	const MONGO_COLLECTION_NAME = 'mycollection';       // collection to store all chats
+	let g_collection = null;
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 	MongoClient.connect(databaseURI, (err,db) => {
@@ -371,17 +346,17 @@
 					await client.connect();
 					console.log("Cluster connection                                      : Success");
 	
-					DB = client.db(MONGO_DATABASE_NAME);
+					const DB = client.db(MONGO_DATABASE_NAME);
 					if(!DB) {
 						console.log(`Database - ${MONGO_DATABASE_NAME} - connection error`);
 						return console.error(DB);
 					}
 					console.log(`Database(${MONGO_DATABASE_NAME}) connection        : Success`);
 	
-					COLL = DB.collection(MONGO_COLLECTION_NAME);
-					if(!COLL) {
+					g_collection = DB.collection(MONGO_COLLECTION_NAME);
+					if(!g_collection) {
 						console.log(`Collection - ${MONGO_COLLECTION_NAME} - connection error`);
-						return console.error(COLL);
+						return console.error(g_collection);
 					}
 					console.log(`Collection(${MONGO_COLLECTION_NAME}) connection          : Success`);
 	

@@ -12,37 +12,36 @@
 </head>
 
 <body>
-<!-- 
-	Name: <input type="text"   id="inputName" class="numPadSz"><br>
-	Age:  <input type="number" id="inputAge"  class="numPadSz"><br>
-	
-	<button type="button" onclick="return myFunction();">Try it</button>
+	<!-- https://mongoplayground.net/ -->
 
-	<br> <br>
-
-	<div id="displayElement"></div> 
--->
+	<div id="heading">
+		<span class="titleText">Mongodb Playground</span>
+		<input id="runBtnId" type="button" value="Run" />
+		<input id="fillTestDataBtnId" type="button" value="Fill Test Data" />
+	</div>
 
 
-	<input type="button" value="run" onclick="myFunction()" title="ctrl + enter">
 
-	<div class="gridColumnLayout gridColumnLayout_3">
-		<div id="dbColumn">Database
-			<textarea id="story" name="story" rows="5" cols="33">
-				It was a dark and stormy night...
-			</textarea>
+	<div class="gridColumnLayout gridColumnLayout_3 gridStyle">
+		<div id="dbColumn" class="textAreaWrapper">
+			<span class="titleText">Collection</span>
+			<!-- textarea end tag should finish on the SAME line of textarea open tag otherwise you will get cursor position issue -->
+			<textarea id="collectionId" class="my-textarea"  wrap="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
 		</div>
-		<div id="queryColumn">Query
-			<textarea id="story" name="story" rows="5" cols="33">
-				It was a dark and stormy night...
-			</textarea>
+		<div id="queryColumn" class="textAreaWrapper">
+			<span class="titleText">Query</span>
+			<textarea id="queryId" class="my-textarea"  wrap="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
 		</div>
-		<div id="resultColumn">Result
-			<textarea id="story" name="story" rows="5" cols="33">
-				It was a dark and stormy night...
-			</textarea>
+		<div id="resultColumn" class="textAreaWrapper">
+			<span class="titleText">Result</span>
+			<textarea id="resultId" class="my-textarea" wrap="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
 		</div>
 	</div>
+	<br/><br/><br/>
+
+
+	<!-- Error Section -->
+	<div id="collectionErrorId"></div>
 
 	<script src="js/client.js"></script>
 	<script src="/socket.io/socket.io.js"></script>
