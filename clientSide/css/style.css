@@ -49,9 +49,9 @@ html, body {
 
 
 #heading { background: yellow;  }
-#dbColumn { background: red;  }
-#queryColumn { background: blue; }
-#resultColumn { background: green; }
+#dbColumn, #collectionErrorId { background: red;  }
+#queryColumn, #queryErrorId { background: blue; }
+#resultColumn, #resultErrorId { background: green; }
 
 /* Grid Layout */
 .gridColumnLayout {

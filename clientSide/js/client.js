@@ -9,16 +9,6 @@ window.addEventListener('load', function() {
 	function notifyToServer(event, data) {
 		socket.emit(event, data);
 	}
-
-	// notifyToServer('CLIENT_TO_SERVER_EVENT', JSON.stringify({ name:'sridhar', age: 40}));
-
-
-	// [Client <= Server] Receive data from server to client
-	socket.on("SERVER_TO_CLIENT_EVENT", async (data) => {
-		const obj = JSON.parse(data);
-		console.log(obj);
-	});
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /*
 // pretty print
@@ -46,10 +36,16 @@ window.addEventListener('load', function() {
 	const queryRef = document.querySelector('#queryId');
 	const resultRef = document.querySelector('#resultId');
 
+	const collectionErrorRef = document.querySelector('#collectionErrorId');
+	const queryErrorRef = document.querySelector('#queryErrorId');
+	const resultErrorRef = document.querySelector('#resultErrorId');
+
 	const runBtnRef = document.querySelector('#runBtnId');
 	runBtnRef.addEventListener('click', onRunBtnClicked);
 	const fillTestDataBtnRef = document.querySelector('#fillTestDataBtnId');
 	fillTestDataBtnRef.addEventListener('click', onfillTestDataBtnClicked);
+	const clearDatabaseBtnRef = document.querySelector('#clearDatabaseBtnId');
+	clearDatabaseBtnRef.addEventListener('click', onclearDatabaseBtnClicked);
 
 	function onfillTestDataBtnClicked(e) {
 		// console.log(e.key);       // d
@@ -59,16 +55,21 @@ window.addEventListener('load', function() {
 		queryRef.value = 'find()';
 	}
 
-	
+	function onclearDatabaseBtnClicked(e) {
+		notifyToServer('CLIENT_TO_SERVER_CLEAR_DATABASE', null);
+	}
 
 	function onRunBtnClicked(e) {
-		// console.log(e.key);       // d
-		// console.log(this.value);  // srid
-
 		// Collection
-		console.log(collTxtAreaRef.value); // "\t\t\t\t\t{ name:'Jay', \n\n\nage: 7 }\t\t"
-		console.log(JSON.stringify(eval("(" + collTxtAreaRef.value + ")"))); // '{"name":"jay","age":7}'
-		let collection = eval("(" + collTxtAreaRef.value + ")");
+		let collection = null;
+		try {
+			console.log(collTxtAreaRef.value); // "\t\t\t\t\t{ name:'Jay', \n\n\nage: 7 }\t\t"
+			console.log(JSON.stringify(eval("(" + collTxtAreaRef.value + ")"))); // '{"name":"jay","age":7}'
+			collection = eval("(" + collTxtAreaRef.value + ")");
+		}
+		catch(error) {
+			return errorHandler('COLLECTION_SECTION', { errorType: collTxtAreaRef.value, errorMsg: error } );			
+		}
 
 		// Query
 		console.log(queryRef.value);
@@ -83,12 +84,9 @@ window.addEventListener('load', function() {
 		notifyToServer('CLIENT_TO_SERVER_EVENT', JSON.stringify(data));
 	}
 
-	const collectionErrorRef = document.querySelector('#collectionErrorId');
-
 	// [Client <= Server] Receive data from server to client
 	socket.on("SERVER_TO_CLIENT_COLLECTION_ERROR", async (data) => {
-		console.log(data);
-		collectionErrorRef.textContent = "Collection Error: " + data;
+		errorHandler('COLLECTION_SECTION', data);
 	});
 
 	socket.on("SERVER_TO_CLIENT_OUTPUT", async (data) => {
@@ -96,24 +94,26 @@ window.addEventListener('load', function() {
 		resultRef.textContent = data;
 	});
 
+	socket.on("SERVER_TO_CLIENT_CLEAR_DATABASE", async (data) => {
+		console.log(data);
+		resultRef.textContent = '';
+	});
 
-	
-
-
-
-
-
-
-
-
-
-
-
-	function myFunction() 
-	{ 
-		var name, age; 
-		name = document.getElementById("inputName").value;
-		age  = parseInt(document.getElementById("inputAge").value);
-		document.getElementById("displayElement").innerHTML = name +" " + age; 
+	function errorHandler(errorSection, errorData) {
+		console.log(errorData);
+		switch(errorSection) {
+			case 'COLLECTION_SECTION':
+				collectionErrorRef.textContent = "Collection Error: " + JSON.stringify(errorData);
+				break;
+			case 'QUERY_SECTION':
+				queryErrorRef.textContent = "Query Error: " + JSON.stringify(errorData);
+				break;
+			case 'RESULT_SECTION':
+				resultErrorRef.textContent = "Result Error: " + JSON.stringify(errorData);
+				break;
+			default:
+				console.error('Uncaught Error: '+ errorData);
+		}
 	}
+
 }); // window.addEventListener('load', function() {
